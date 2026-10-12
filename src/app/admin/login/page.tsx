@@ -1,10 +1,11 @@
 
+import { Suspense } from "react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getAdminSession } from "@/lib/admin-session";
 import LoginForm from "./LoginForm";
 
-export default async function AdminLoginPage() {
+async function AdminLoginContent() {
   const admin = await getAdminSession();
 
   if (admin) {
@@ -46,5 +47,21 @@ export default async function AdminLoginPage() {
         </div>
       </section>
     </main>
+  );
+}
+
+export default function AdminLoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="flex min-h-screen items-center justify-center bg-[#FAFBFD] px-5 py-12">
+          <p className="text-sm text-[#647188]">
+            Loading administrator login...
+          </p>
+        </main>
+      }
+    >
+      <AdminLoginContent />
+    </Suspense>
   );
 }
