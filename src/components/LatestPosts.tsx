@@ -1,8 +1,12 @@
 
 import Link from "next/link";
+import { Suspense } from "react";
+import { connection } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-export default async function LatestPosts() {
+async function LatestPostsContent() {
+  await connection();
+
   const posts = await prisma.post.findMany({
     where: { status: "PUBLISHED" },
     include: {
@@ -59,7 +63,9 @@ export default async function LatestPosts() {
             className="block rounded-2xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#3976D8]"
           >
             <div
-              className={`relative flex h-56 items-center justify-center overflow-hidden rounded-2xl ${coverStyles[index % coverStyles.length]}`}
+              className={`relative flex h-56 items-center justify-center overflow-hidden rounded-2xl ${
+                coverStyles[index % coverStyles.length]
+              }`}
             >
               {post.coverImage ? (
                 <img
@@ -78,7 +84,7 @@ export default async function LatestPosts() {
               )}
 
               <span className="absolute bottom-4 left-4 rounded-full bg-white/80 px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.15em] text-[#14233B]">
-                Simply Smart Money
+                SimplySmartWealth
               </span>
 
               <span className="absolute bottom-4 right-4 translate-y-2 rounded-full bg-[#14233B] px-3 py-2 text-xs font-semibold text-white opacity-0 transition duration-300 group-hover:translate-y-0 group-hover:opacity-100">
@@ -113,5 +119,33 @@ export default async function LatestPosts() {
         </article>
       ))}
     </div>
+  );
+}
+
+function LatestPostsLoading() {
+  return (
+    <div
+      className="grid gap-7 md:grid-cols-2 lg:grid-cols-3"
+      aria-label="Loading latest articles"
+      aria-busy="true"
+    >
+      {[1, 2, 3].map((item) => (
+        <div key={item} className="animate-pulse">
+          <div className="h-56 rounded-2xl bg-[#F4F7FC]" />
+          <div className="mt-5 h-4 w-1/3 rounded bg-[#F4F7FC]" />
+          <div className="mt-4 h-6 w-4/5 rounded bg-[#F4F7FC]" />
+          <div className="mt-3 h-4 w-full rounded bg-[#F4F7FC]" />
+          <div className="mt-2 h-4 w-2/3 rounded bg-[#F4F7FC]" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export default function LatestPosts() {
+  return (
+    <Suspense fallback={<LatestPostsLoading />}>
+      <LatestPostsContent />
+    </Suspense>
   );
 }
