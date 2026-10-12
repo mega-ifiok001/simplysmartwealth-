@@ -1,11 +1,13 @@
 
 import Link from "next/link";
 import { Suspense } from "react";
+import { connection } from "next/server";
 import { prisma } from "@/lib/prisma";
-import SiteFooter from '../../components/SiteFooter'
-
+import SiteFooter from "../../components/SiteFooter";
 
 async function BlogContent() {
+  await connection();
+
   const posts = await prisma.post.findMany({
     where: {
       status: "PUBLISHED",
@@ -29,7 +31,7 @@ async function BlogContent() {
       <header className="border-b border-[#E8ECF2]">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-5 sm:px-8 lg:px-12">
           <Link href="/" className="text-lg font-semibold tracking-tight">
-            Simply Smart Money
+            SimplySmartWealth
           </Link>
 
           <nav className="flex flex-wrap items-center gap-4 text-sm text-[#526078] sm:gap-6">
@@ -52,7 +54,7 @@ async function BlogContent() {
       <section className="bg-[#F4F7FC]">
         <div className="mx-auto max-w-7xl px-5 py-16 sm:px-8 sm:py-20 lg:px-12">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#3976D8]">
-            The Simply Smart Money Journal
+            The SimplySmartWealth Journal
           </p>
 
           <h1 className="mt-4 max-w-3xl text-4xl font-semibold leading-tight tracking-tight sm:text-6xl">
@@ -118,7 +120,7 @@ async function BlogContent() {
                     )}
 
                     <span className="absolute bottom-4 left-4 rounded-full bg-white/90 px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-[#14233B]">
-                      Simply Smart Money
+                      SimplySmartWealth
                     </span>
                   </div>
 
@@ -150,8 +152,7 @@ async function BlogContent() {
         )}
       </section>
 
-           <SiteFooter />
-     
+      <SiteFooter />
     </main>
   );
 }
