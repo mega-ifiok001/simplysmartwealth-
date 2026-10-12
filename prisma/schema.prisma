@@ -1,0 +1,126 @@
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum PostStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum AdminRole {
+  ADMIN
+  EDITOR
+}
+
+enum CommentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model AdminUser {
+  id           String    @id @default(cuid())
+  name         String
+  email        String    @unique
+  passwordHash String
+  role         AdminRole @default(EDITOR)
+  posts        Post[]
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model Category {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  slug        String   @unique
+  description String?
+  posts       Post[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Post {
+  id             String     @id @default(cuid())
+  title          String
+  slug           String     @unique
+  excerpt        String     @db.Text
+  content        String     @db.Text
+  coverImage     String?
+  status         PostStatus @default(DRAFT)
+  featured       Boolean    @default(false)
+  seoTitle       String?
+  seoDescription String?    @db.Text
+  tags           String[]   @default([])
+  readingTime    Int        @default(1)
+  publishedAt    DateTime?
+  authorId       String?
+  categoryId     String?
+  author         AdminUser? @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  category       Category?  @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  comments       Comment[]
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  @@index([status, publishedAt])
+  @@index([categoryId])
+}
+
+
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  subject   String
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([createdAt])
+  @@index([isRead, createdAt])
+}
+
+model Comment {
+  id          String        @id @default(cuid())
+  authorName  String
+  authorEmail String?
+  content     String        @db.Text
+  status      CommentStatus @default(PENDING)
+
+  postId String
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  parentId String?
+  parent   Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies  Comment[] @relation("CommentReplies")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([postId, status, createdAt])
+  @@index([parentId, status, createdAt])
+}
+
+model NewsletterSubscriber {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  isSubscribed Boolean  @default(true)
+  subscribedAt DateTime @default(now())
+}
+
+model SiteSettings {
+  id              String   @id @default("global")
+  siteName        String   @default("SimplySmartWealth")
+  tagline         String   @default("Make smarter money decisions.")
+  description     String   @default("Practical financial education for a smarter financial future.")
+  defaultLanguage String   @default("en")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
