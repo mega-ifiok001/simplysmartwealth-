@@ -1,7 +1,8 @@
 
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { getAdminSession } from "@/lib/admin-session";
-import {prisma} from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
 
 type RouteContext = {
   params: Promise<{ id: string }>;
@@ -12,7 +13,6 @@ export async function PUT(
   { params }: RouteContext
 ) {
   try {
-    // 1. Verify admin authentication
     const admin = await getAdminSession();
 
     if (!admin) {
@@ -22,17 +22,15 @@ export async function PUT(
       );
     }
 
-    // 2. Get and validate the post ID
     const { id } = await params;
 
-    if (!id || !id.trim()) {
+    if (!id?.trim()) {
       return NextResponse.json(
         { error: "A valid post ID is required." },
         { status: 400 }
       );
     }
 
-    // 3. Parse the request body
     const body = await request.json();
 
     const {
@@ -47,7 +45,6 @@ export async function PUT(
       status,
     } = body;
 
-    // 4. Validate required fields
     if (
       typeof title !== "string" ||
       !title.trim() ||
@@ -57,9 +54,7 @@ export async function PUT(
       !content.trim()
     ) {
       return NextResponse.json(
-        {
-          error: "Title, slug, and content are required.",
-        },
+        { error: "Title, slug, and content are required." },
         { status: 400 }
       );
     }
@@ -91,10 +86,12 @@ export async function PUT(
       );
     }
 
-    // 5. Check whether the post exists
     const existingPost = await prisma.post.findUnique({
       where: { id },
-      select: { id: true },
+      select: {
+        id: true,
+        slug: true,
+      },
     });
 
     if (!existingPost) {
@@ -104,10 +101,11 @@ export async function PUT(
       );
     }
 
-    // 6. Check whether another post uses this slug
+    const cleanSlug = slug.trim();
+
     const slugOwner = await prisma.post.findFirst({
       where: {
-        slug: slug.trim(),
+        slug: cleanSlug,
         NOT: { id },
       },
       select: { id: true },
@@ -116,19 +114,17 @@ export async function PUT(
     if (slugOwner) {
       return NextResponse.json(
         {
-          error:
-            "This slug is already being used by another post.",
+          error: "This slug is already being used by another post.",
         },
         { status: 409 }
       );
     }
 
-    // 7. Update the post
     const updatedPost = await prisma.post.update({
       where: { id },
       data: {
         title: title.trim(),
-        slug: slug.trim(),
+        slug: cleanSlug,
         content,
         excerpt:
           typeof excerpt === "string" ? excerpt : "",
@@ -138,21 +134,30 @@ export async function PUT(
             : null,
         categoryId:
           typeof categoryId === "string" && categoryId.trim()
-            ? categoryId
+            ? categoryId.trim()
             : null,
-        tags: Array.isArray(tags)
-          ? tags.filter(
-              (tag): tag is string =>
-                typeof tag === "string" && tag.trim().length > 0
-            )
-          : undefined,
+        tags:
+          Array.isArray(tags)
+            ? tags.filter(
+                (tag): tag is string =>
+                  typeof tag === "string" &&
+                  tag.trim().length > 0
+              )
+            : undefined,
         featured:
-          typeof featured === "boolean" ? featured : undefined,
+          typeof featured === "boolean"
+            ? featured
+            : undefined,
         status,
       },
     });
 
-    // 8. Return the updated post
+    // Refresh public pages and the admin list.
+    revalidatePath(`/blog/${existingPost.slug}`);
+    revalidatePath(`/blog/${updatedPost.slug}`);
+    revalidatePath("/blog");
+    revalidatePath("/admin/posts");
+
     return NextResponse.json(
       {
         message: "Post updated successfully.",
@@ -160,7 +165,7 @@ export async function PUT(
       },
       { status: 200 }
     );
-   } catch (error: unknown) {
+  } catch (error: unknown) {
     console.error("Update post error:", error);
 
     const errorCode =
@@ -186,7 +191,92 @@ export async function PUT(
     }
 
     return NextResponse.json(
-      { error: "An unexpected error occurred while updating the post." },
+      {
+        error:
+          "An unexpected error occurred while updating the post.",
+      },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(
+  _request: NextRequest,
+  { params }: RouteContext
+) {
+  try {
+    const admin = await getAdminSession();
+
+    if (!admin) {
+      return NextResponse.json(
+        { error: "Unauthorized. Please log in." },
+        { status: 401 }
+      );
+    }
+
+    const { id } = await params;
+
+    if (!id?.trim()) {
+      return NextResponse.json(
+        { error: "A valid post ID is required." },
+        { status: 400 }
+      );
+    }
+
+    const post = await prisma.post.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        slug: true,
+      },
+    });
+
+    if (!post) {
+      return NextResponse.json(
+        { error: "Post not found." },
+        { status: 404 }
+      );
+    }
+
+    await prisma.post.delete({
+      where: { id },
+    });
+
+    // Refresh the public blog and admin pages.
+    revalidatePath(`/blog/${post.slug}`);
+    revalidatePath("/blog");
+    revalidatePath("/admin/posts");
+
+    return NextResponse.json(
+      {
+        success: true,
+        message: "Post deleted successfully.",
+      },
+      { status: 200 }
+    );
+  } catch (error: unknown) {
+    console.error("Delete post error:", error);
+
+    const errorCode =
+      typeof error === "object" &&
+      error !== null &&
+      "code" in error &&
+      typeof error.code === "string"
+        ? error.code
+        : undefined;
+
+    if (errorCode === "P2025") {
+      return NextResponse.json(
+        { error: "Post not found." },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json(
+      {
+        error:
+          "Unable to delete this post. It may be linked to other records.",
+      },
       { status: 500 }
     );
   }

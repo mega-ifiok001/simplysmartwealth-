@@ -1,11 +1,13 @@
+
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { prisma } from "@/lib/prisma";
 import { getAdminSession } from "@/lib/admin-session";
+import DeletePostButton from "./DeletePostButton";
 
 export const metadata = {
-  title: "Manage Blogs | Simply Smart Money",
+  title: "Manage Blogs | SimplySmartWealth",
   robots: { index: false, follow: false },
 };
 
@@ -24,7 +26,9 @@ async function PostsContent() {
       slug: true,
       status: true,
       updatedAt: true,
-      category: { select: { name: true } },
+      category: {
+        select: { name: true },
+      },
     },
   });
 
@@ -35,9 +39,11 @@ async function PostsContent() {
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#3976D8]">
             Publication workspace
           </p>
+
           <h1 className="mt-2 text-3xl font-semibold tracking-tight">
             Manage blogs
           </h1>
+
           <p className="mt-2 text-sm leading-6 text-[#647188]">
             Create, review and organise your money guides.
           </p>
@@ -53,7 +59,9 @@ async function PostsContent() {
 
       <section className="mt-8 overflow-hidden rounded-2xl border border-[#E5EAF1] bg-white shadow-sm">
         <div className="border-b border-[#E5EAF1] px-5 py-4">
-          <h2 className="font-semibold">All blogs ({posts.length})</h2>
+          <h2 className="font-semibold">
+            All blogs ({posts.length})
+          </h2>
         </div>
 
         {posts.length === 0 ? (
@@ -61,10 +69,15 @@ async function PostsContent() {
             <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-[#EAF1FD] text-[#315B9A]">
               ✎
             </div>
-            <h3 className="mt-4 font-semibold">Your first blog starts here</h3>
+
+            <h3 className="mt-4 font-semibold">
+              Your first blog starts here
+            </h3>
+
             <p className="mt-2 text-sm text-[#647188]">
               Create a practical money guide for your readers.
             </p>
+
             <Link
               href="/admin/posts/new"
               className="mt-5 inline-flex rounded-xl bg-[#14233B] px-4 py-3 text-sm font-semibold text-white hover:bg-[#263D60]"
@@ -80,26 +93,37 @@ async function PostsContent() {
                   <th className="px-5 py-4 font-medium">Blog</th>
                   <th className="px-5 py-4 font-medium">Category</th>
                   <th className="px-5 py-4 font-medium">Status</th>
-                  <th className="px-5 py-4 font-medium">Last updated</th>
+                  <th className="px-5 py-4 font-medium">
+                    Last updated
+                  </th>
                   <th className="px-5 py-4 font-medium">Action</th>
                 </tr>
               </thead>
+
               <tbody className="divide-y divide-[#E5EAF1]">
                 {posts.map((post) => {
                   const isPublished = post.status === "PUBLISHED";
                   const isDraft = post.status === "DRAFT";
 
                   return (
-                    <tr key={post.id} className="transition hover:bg-[#FAFBFD]">
+                    <tr
+                      key={post.id}
+                      className="transition hover:bg-[#FAFBFD]"
+                    >
                       <td className="px-5 py-4">
-                        <p className="font-semibold">{post.title}</p>
+                        <p className="font-semibold">
+                          {post.title}
+                        </p>
+
                         <p className="mt-1 text-xs text-[#647188]">
                           /blog/{post.slug}
                         </p>
                       </td>
+
                       <td className="px-5 py-4 text-[#647188]">
                         {post.category?.name ?? "Uncategorised"}
                       </td>
+
                       <td className="px-5 py-4">
                         <span
                           className={`rounded-full px-3 py-1 text-xs font-semibold ${
@@ -117,6 +141,7 @@ async function PostsContent() {
                               : String(post.status)}
                         </span>
                       </td>
+
                       <td className="whitespace-nowrap px-5 py-4 text-[#647188]">
                         {post.updatedAt.toLocaleDateString("en-NG", {
                           day: "numeric",
@@ -124,13 +149,22 @@ async function PostsContent() {
                           year: "numeric",
                         })}
                       </td>
-                      <td className="px-5 py-4">
-                        <Link
-                          href={`/admin/posts/${post.id}/edit`}
-                          className="font-semibold text-[#315B9A] hover:text-[#3976D8]"
-                        >
-                          Edit
-                        </Link>
+
+                      <td className="whitespace-nowrap px-5 py-4">
+                        <div className="flex items-center gap-4">
+                          <Link
+                            href={`/admin/posts/${post.id}/edit`}
+                            className="font-semibold text-[#315B9A] transition hover:text-[#3976D8]"
+                          >
+                            Edit
+                          </Link>
+
+                          <DeletePostButton
+                            postId={post.id}
+                            postTitle={post.title}
+                            postSlug={post.slug}
+                          />
+                        </div>
                       </td>
                     </tr>
                   );
@@ -147,7 +181,11 @@ async function PostsContent() {
 export default function AdminPostsPage() {
   return (
     <Suspense
-      fallback={<div className="p-8 text-[#647188]">Loading blogs...</div>}
+      fallback={
+        <div className="p-8 text-[#647188]">
+          Loading blogs...
+        </div>
+      }
     >
       <PostsContent />
     </Suspense>
