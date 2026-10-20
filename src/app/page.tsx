@@ -42,12 +42,7 @@ export default function Home() {
             aria-label="Simply Smart Money homepage"
             className="group flex shrink-0 items-center gap-3"
           >
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#14233B] text-lg font-semibold text-white transition duration-300 group-hover:rotate-[-8deg] group-hover:scale-105">
-              S
-            </span>
-            <span className="text-lg font-semibold tracking-tight sm:text-xl">
-              Simply Smart Money
-            </span>
+            <img src='/logo.png' width={200} alt='official logo' />
           </Link>
 
           <nav

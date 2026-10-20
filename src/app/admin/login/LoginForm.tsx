@@ -92,7 +92,7 @@ export default function LoginForm() {
       <button
         type="submit"
         disabled={isLoading}
-        className="w-full rounded-xl bg-[#14233B] px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-[#263D60] disabled:cursor-not-allowed disabled:opacity-60"
+        className="w-full rounded-xl cursor-pointer bg-[#14233B] px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-[#263D60] disabled:cursor-not-allowed disabled:opacity-60"
       >
         {isLoading ? "Signing in..." : "Sign in securely"}
       </button>

@@ -60,7 +60,7 @@ const navItems = [
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-[#E5EAF1] bg-white lg:flex">
         <div className="border-b border-[#E5EAF1] px-6 py-5">
           <Link href="/" className="text-lg font-bold tracking-tight">
-            Simply <span className="text-[#3976D8]">Smart Money</span>
+           <img src="/logo.png" alt="official logo"  />
           </Link>
           <span className="mt-2 inline-block rounded-full bg-[#EAF1FD] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-[#315B9A]">
             Admin

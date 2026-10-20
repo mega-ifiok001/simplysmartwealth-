@@ -11,7 +11,7 @@ export default function SiteFooter() {
               href="/"
               className="text-lg font-bold tracking-tight text-[#14233B]"
             >
-              Simply Smart Money
+              <img src="/logo.png" width={200} alt='official logo' />
             </Link>
             <p className="mt-3 max-w-sm text-sm leading-7 text-[#647188]">
               Practical money tips for everyday life. Learn about saving,

@@ -19,12 +19,12 @@ async function AdminLoginContent() {
           href="/"
           className="inline-flex items-center gap-2 text-sm font-semibold text-[#315B9A] transition hover:text-[#3976D8]"
         >
-          <span aria-hidden="true">←</span> Back to Simply Smart Money
+          <span aria-hidden="true">←</span> Back to Main website
         </Link>
 
         <div className="mt-8 rounded-3xl border border-[#E5EAF1] bg-white p-7 shadow-sm sm:p-9">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#EAF1FD] text-xl font-bold text-[#315B9A]">
-            S
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl  text-xl font-bold text-[#315B9A]">
+            <img src="/block.png" alt='block logo' />
           </div>
 
           <p className="mt-7 text-xs font-semibold uppercase tracking-[0.18em] text-[#3976D8]">

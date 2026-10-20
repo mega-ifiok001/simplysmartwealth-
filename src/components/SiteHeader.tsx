@@ -14,10 +14,8 @@ export default function SiteHeader() {
         <Link href="/" className="flex shrink-0 items-center gap-3">
           <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#14233B] text-lg font-bold text-white">
             S
-          </span>
-          <span className="text-base font-bold tracking-tight sm:text-lg">
-            Simply Smart Money
-          </span>
+          </span> 
+        <img src='/logo.png' width={200} alt='offical logo' />
         </Link>
 
         <nav

@@ -88,7 +88,7 @@ export default async function AdminDashboardPage() {
           Welcome back, {firstName}.
         </h1>
         <p className="mt-2 text-sm text-[#647188]">
-          Here&apos;s what&apos;s happening with Simply Smart Money today.
+          Here&apos;s what&apos;s happening with Simply Smart Wealth today.
         </p>
       </div>
 
